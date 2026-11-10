@@ -18,12 +18,15 @@ jobs:
           npm pack three@0.181.2 --pack-destination threejs-vendor
           tar -xzf threejs-vendor/three-*.tgz -C threejs-vendor
           cp threejs-vendor/package/build/three.module.js threejs-vendor/three.module.js
+          cp threejs-vendor/package/build/three.core.js threejs-vendor/three.core.js
           test -s threejs-vendor/three.module.js
           wc -c threejs-vendor/three.module.js
       - name: Supply local offline engine bundle
         uses: actions/upload-artifact@v4
         with:
           name: threejs-offline-1812
-          path: threejs-vendor/three.module.js
+          path: |
+            threejs-vendor/three.module.js
+            threejs-vendor/three.core.js
           retention-days: 3
           if-no-files-found: error
