@@ -1,0 +1,29 @@
+name: Obtain Three.js local engine bundle
+on:
+  push:
+    branches: [demo/threejs-fire-escape]
+    paths: [".github/workflows/threejs-bundle.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned three.js browser module
+        run: |
+          mkdir -p threejs-vendor
+          npm pack three@0.181.2 --pack-destination threejs-vendor
+          tar -xzf threejs-vendor/three-*.tgz -C threejs-vendor
+          cp threejs-vendor/package/build/three.module.js threejs-vendor/three.module.js
+          test -s threejs-vendor/three.module.js
+          wc -c threejs-vendor/three.module.js
+      - name: Supply local offline engine bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: threejs-offline-1812
+          path: threejs-vendor/three.module.js
+          retention-days: 3
+          if-no-files-found: error
