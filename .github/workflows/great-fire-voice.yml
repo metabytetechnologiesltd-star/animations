@@ -21,7 +21,7 @@ jobs:
           curl --fail --location --silent --show-error --retry 2 --connect-timeout 12 --max-time 90 'https://resource2.heygen.ai/text_to_speech/9ed1250ac9044f95b8e15f5b7828033a/a3a4aa242aaf431ea8ec2c4b3bb332fa/id=7b11de9ddcaf4a1a90d2e824d2d13db4.wav' --output output/great_fire_1666_wade.wav
           test -s output/great_fire_1666_wade.wav
           file output/great_fire_1666_wade.wav
-          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 output/great_fire_1666_wade.wav
+          python3 -c 'import wave; w=wave.open("output/great_fire_1666_wade.wav"); print("VALID_WAV_DURATION_SECONDS", round(w.getnframes()/w.getframerate(),3))'
       - uses: actions/upload-artifact@v4
         with:
           name: great-fire-voice-wade
