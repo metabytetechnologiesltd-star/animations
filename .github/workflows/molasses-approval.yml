@@ -1,0 +1,64 @@
+name: Boston Molasses - 12s Blender Rig and Camera Test
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "molasses-film/**"
+      - ".github/workflows/molasses-approval.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  blender-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and FFmpeg (same environment as 5m30 film)
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender xvfb libgl1-mesa-dri ffmpeg
+          blender --version | head -3
+      - name: Render 12s / 288 frames with actual Blender object motion
+        run: |
+          set -euxo pipefail
+          mkdir -p molasses-film/output/frames
+          xvfb-run -a -s "-screen 0 1280x1024x24" blender -b -t 2 --python molasses-film/scripts/scene.py > molasses-film/output/blender.log 2>&1 || { tail -70 molasses-film/output/blender.log; exit 1; }
+          test "$(find molasses-film/output/frames -name 'frame_*.png' | wc -l)" -eq 288
+          cp molasses-film/output/frames/frame_0036.png molasses-film/output/shot_01.png
+          cp molasses-film/output/frames/frame_0116.png molasses-film/output/shot_02.png
+          cp molasses-film/output/frames/frame_0168.png molasses-film/output/shot_03.png
+          cp molasses-film/output/frames/frame_0240.png molasses-film/output/shot_04.png
+      - name: Encode H264 motion test
+        run: |
+          ffmpeg -nostdin -hide_banner -loglevel error -y -framerate 24 -start_number 1 \
+            -i molasses-film/output/frames/frame_%04d.png -c:v libx264 -preset veryfast \
+            -crf 21 -pix_fmt yuv420p -movflags +faststart \
+            molasses-film/output/Molasses_Blend_Test_12s.mp4
+          ffprobe -v error -show_entries stream=width,height,nb_frames,codec_name -show_entries format=duration,size \
+            -of json molasses-film/output/Molasses_Blend_Test_12s.mp4 | tee molasses-film/output/report.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open("molasses-film/output/report.json"))
+          assert abs(float(p["format"]["duration"])-12)<.15
+          assert int(p["streams"][0]["nb_frames"])==288
+          print("PREVIEW_VERIFIED", p["format"]["duration"])
+          PY
+      - name: Keep video + four review frames + diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molasses-blender-12s-approval
+          path: |
+            molasses-film/output/Molasses_Blend_Test_12s.mp4
+            molasses-film/output/shot_*.png
+            molasses-film/output/report.json
+            molasses-film/output/blender.log
+          if-no-files-found: warn
+          retention-days: 7
