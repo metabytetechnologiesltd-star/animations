@@ -33,6 +33,7 @@ jobs:
       ELEVENLABS_NARRATOR_VOICE_ID: ${{ inputs.narrator_voice_id }}
       ELEVENLABS_DIRECTOR_VOICE_ID: ${{ inputs.director_voice_id }}
       ELEVENLABS_ANALYST_VOICE_ID: ${{ inputs.analyst_voice_id }}
+      MODEL_ID: ${{ inputs.model_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,7 +47,7 @@ jobs:
           fi
       - name: Generate speech tracks
         run: |
-          python scripts/elevenlabs/render_voices.py             --input scripts/elevenlabs/barings_lines.json             --output scripts/elevenlabs/out             --model "${{ inputs.model_id }}"
+          python scripts/elevenlabs/render_voices.py             --input scripts/elevenlabs/barings_lines.json             --output scripts/elevenlabs/out             --model "$MODEL_ID"
       - name: Save finished audio tracks
         uses: actions/upload-artifact@v4
         with:
