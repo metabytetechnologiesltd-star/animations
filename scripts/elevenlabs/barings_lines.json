@@ -1,0 +1,76 @@
+{
+  "title": "Barings: The Bank That Died in a Weekend",
+  "note": "Original dramatized dialogue. Dialogue is not a historical transcript; narration should be checked against primary records.",
+  "lines": [
+    {
+      "id": "01_doubt",
+      "speaker": "director",
+      "text": "Tell me that number is wrong."
+    },
+    {
+      "id": "02_answer",
+      "speaker": "analyst",
+      "text": "I checked it twice. It isn't."
+    },
+    {
+      "id": "03_intro",
+      "speaker": "narrator",
+      "text": "London. February nineteen ninety-five. A report lands on a director's desk at Barings, the bank that had financed empires and survived more than two centuries."
+    },
+    {
+      "id": "04_question",
+      "speaker": "director",
+      "text": "Who authorized these positions?"
+    },
+    {
+      "id": "05_reply",
+      "speaker": "analyst",
+      "text": "Nick Leeson. Singapore."
+    },
+    {
+      "id": "06_problem",
+      "speaker": "narrator",
+      "text": "For years, the young trader appeared to make money almost every day. London saw the profits. What it didn't see was the account where the losses went."
+    },
+    {
+      "id": "07_number",
+      "speaker": "analyst",
+      "text": "Account eight eight eight eight eight."
+    },
+    {
+      "id": "08_confused",
+      "speaker": "director",
+      "text": "That's not in the report."
+    },
+    {
+      "id": "09_why",
+      "speaker": "narrator",
+      "text": "And that was the point. A hidden account. A trader who could place bets and help reconcile the books. And a dangerous illusion that the numbers always added up."
+    },
+    {
+      "id": "10_earthquake",
+      "speaker": "narrator",
+      "text": "Then, in January nineteen ninety-five, an earthquake hit Kobe, Japan. Markets moved violently. Leeson's bets became more dangerous."
+    },
+    {
+      "id": "11_margin",
+      "speaker": "analyst",
+      "text": "They're asking for more margin."
+    },
+    {
+      "id": "12_urgency",
+      "speaker": "director",
+      "text": "How much more?"
+    },
+    {
+      "id": "13_stakes",
+      "speaker": "narrator",
+      "text": "Every request for cash brought the bank closer to a question nobody wanted to ask. How much could one trader lose before the whole institution fell?"
+    },
+    {
+      "id": "14_ending",
+      "speaker": "narrator",
+      "text": "By the end of February, Barings would collapse. The eventual loss was reported at roughly eight hundred and twenty-seven million pounds. But the truly shocking part wasn't the size of the loss. It was how long the system allowed it to remain hidden."
+    }
+  ]
+}
