@@ -1,0 +1,55 @@
+name: Generate ElevenLabs documentary voices
+
+on:
+  workflow_dispatch:
+    inputs:
+      narrator_voice_id:
+        description: "ElevenLabs voice ID for narration"
+        required: true
+        type: string
+      director_voice_id:
+        description: "ElevenLabs voice ID for director dialogue"
+        required: true
+        type: string
+      analyst_voice_id:
+        description: "ElevenLabs voice ID for analyst dialogue"
+        required: true
+        type: string
+      model_id:
+        description: "ElevenLabs TTS model"
+        required: true
+        default: eleven_multilingual_v2
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  voiceover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      ELEVENLABS_NARRATOR_VOICE_ID: ${{ inputs.narrator_voice_id }}
+      ELEVENLABS_DIRECTOR_VOICE_ID: ${{ inputs.director_voice_id }}
+      ELEVENLABS_ANALYST_VOICE_ID: ${{ inputs.analyst_voice_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify that ElevenLabs key is configured
+        run: |
+          if [ -z "$ELEVENLABS_API_KEY" ]; then
+            echo "Missing repository secret ELEVENLABS_API_KEY"
+            exit 1
+          fi
+      - name: Generate speech tracks
+        run: |
+          python scripts/elevenlabs/render_voices.py             --input scripts/elevenlabs/barings_lines.json             --output scripts/elevenlabs/out             --model "${{ inputs.model_id }}"
+      - name: Save finished audio tracks
+        uses: actions/upload-artifact@v4
+        with:
+          name: barings-elevenlabs-voices
+          path: scripts/elevenlabs/out/
+          retention-days: 7
