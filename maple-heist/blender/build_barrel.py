@@ -1,4 +1,7 @@
 """Blender: creates the barrel geometry actually loaded and animated in Remotion/Three.js."""
+import sys
+sys.path.insert(0, '/usr/lib/python3/dist-packages')
+import numpy
 import bpy, math, os, random
 from mathutils import Vector
 random.seed(42)
