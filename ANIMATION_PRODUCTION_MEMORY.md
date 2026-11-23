@@ -1,5 +1,5 @@
 # ANIMATION PRODUCTION MEMORY — authoritative pipeline
-Version: 2.1
+Version: 2.2
 Last updated: 2026-11-23
 Owner: animation YouTube projects, including Second Guess Animations and original long-form documentary work.
 
@@ -91,3 +91,17 @@ The user explicitly chose **hybrid 3D/2D**, not fully photorealistic 3D or flat 
 - This selects an **animation category**, not a particular permanent protagonist. Do not confuse the user's previous request for three animation TYPES with three clothing variations of one character.
 - Preserve the pre-existing Second Guess Animations painted thriller identity; document the long-form documentary style independently instead of overwriting it.
 - First reference implementation: branch `film/hybrid-3d2d-impossible-frame`, folder `hybrid-vault/`. Rendering and user review determine whether its visual fidelity is approved; successful technical rendering alone is not artistic approval.
+
+
+## Long-form finance documentary test — Wirecard €1.9bn / 30 seconds (2026-11-23)
+
+- User now wants original **long-form financial scandal and corporate investigation documentaries**, reverse-engineering successful documentary pacing, not their scripts/artwork. Prototype: **The €1.9 Billion Mirage**, original 30-second Wirecard 2020 cold open, 11 shots; project branch `film/wirecard-hybrid-finance-30s`, folder `wirecard-30s/`, successful render run https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45116529068.
+- Selected visual **hybrid 3D/2D** maintained: real Blender geometry and Three.js hand/prop animation combined with original illustrated/motion-graphic overlays. Current procedural characters still look toy-like; do **not** call this a premium finished model standard. Next character development must improve silhouettes, hand constraints, anatomy, facial blendshapes, wardrobe, and motion arcs.
+- **Subtitles are mandatory** for these documentary videos. Burn in high-contrast short caption cards on a near-opaque dark bottom panel; 2 lines max, white body text, a highlighted active word, and avoid blocking faces/important props. Export optional separate SRT as well. Test screenshot pixel content, not just existence of an SRT file. The 30-second prototype has 14 caption cards covering narration and dialogue, using estimated weighted word timing; **WhisperX actual forced alignment** remains the next accuracy upgrade. Do not claim sample-accurate captions until actually aligned.
+- **Voice-first synchronization**: download approved existing natural ElevenLabs MP3s into CI; derive exact clips, mouth opening amplitude, phrase timings, and timeline from recordings. Audio-derived mouth opening is an improvement over sinusoidal mouth loops but is NOT full phoneme/viseme synchronization.
+- **Blender → Three.js axis pitfall**: assets authored in Three.js-style Y-up coordinates inside Blender were accidentally glTF-exported with its default Y-up coordinate conversion, turning the floor into a giant vertical wall and blanking the whole view. For such specially Y-up authored assets, export with `bpy.ops.export_scene.gltf(..., export_yup=False)`, or (preferred long term) author native Blender Z-up and let exporter convert. Validate resulting GLB bounds and rendered camera frames. **Do not blindly apply export_yup=False to ordinary Z-up Blender projects.**
+- A successful MP4 encode does not prove actual 3D visibility. The Wirecard preflight first produced flat gray frames and passed a trivial file-size check. Add a **scene-variance gate** measuring non-overlaid middle-frame RGB standard deviation and manually inspect 4+ screenshots before full rendering. A workflow must fail on blank/occluded 3D content.
+- Treat React postprocessing on CPU software WebGL with caution: prior 21-second hybrid test blanked when running the postprocessing pass. Keep finishing safely in Remotion CSS/2D until a visual A/B confirms valid WebGL postprocessing; keep library installed, do not uninstall.
+- For CPU-only GitHub runners, render 30s at 24 fps 1280×720 as **four 180-frame parallel Remotion chunks**, then FFmpeg concat and mix the existing voice WAV + original Foley once, followed by FFprobe verification of 30.000 s, 720 frames, resolution and audio. Review actual contact sheet and a sound-level/silence report.
+- For real scandals, cross-check documentary dates, losses, banks and corporate names against primary disclosures and regulator reports. Mark fictional staff interactions clearly as **DRAMATIZED DIALOGUE**, not actual quotations.
+- Existing pipeline remains intact: **Blender + Three.js/Fiber9 + Remotion + ElevenLabs + FFmpeg + GitHub Actions**. Theatre.js Core/Studio, GSAP, WhisperX and HyperFrames are additive only, not compulsory in every shot.
