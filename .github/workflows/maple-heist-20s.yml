@@ -71,11 +71,11 @@ jobs:
         working-directory: maple-heist
         run: |
           npx remotion browser ensure
-          npx remotion still src/index.jsx MapleHeist20 out/Approval_Frame.png --frame=230 --gl=angle
+          npx remotion still src/index.jsx MapleHeist20 out/Approval_Frame.png --frame=230 --gl=swangle
       - name: Render complete 20-second video with Remotion and Three.js
         working-directory: maple-heist
         run: |
-          npx remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=angle --concurrency=2 --codec=h264 --crf=21 --log=error
+          npx remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=21 --log=error
       - name: Verify exact runtime, frame rate, audio, image size
         working-directory: maple-heist
         run: |
