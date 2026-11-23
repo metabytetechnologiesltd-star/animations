@@ -131,7 +131,7 @@ function Reflection({time}){
 function Camera({time}){
  const {camera}=useThree();
  useLayoutEffect(()=>{
-  sheet.sequence.position=time;const p=director.value || baselineAt(time);
+  sheet.sequence.position=time;const values=director.value;const p=(values && Number.isFinite(values.camX) && Number.isFinite(values.camZ) && Number.isFinite(values.aimZ))?values:baselineAt(time);
   camera.position.set(p.camX,p.camY,p.camZ);camera.lookAt(p.aimX,p.aimY,p.aimZ);camera.updateProjectionMatrix();
  },[time,camera]);
  return null;
@@ -153,7 +153,7 @@ function Scene(){
   <Architecture/><Exhibit/><Door time={time}/>
   <Human x={-2.03} guard={false} time={time}/><Human x={2.03} guard time={time}/>
   <Reflection time={time}/><Camera time={time}/>
-  <EffectComposer multisampling={0}><Bloom intensity={.16} luminanceThreshold={1.1}/><Vignette eskil={false} offset={.23} darkness={.36}/></EffectComposer>
+  {process.env.REMOTION_HYBRID_POSTPROCESS === "1" && <EffectComposer multisampling={0}><Bloom intensity={.16} luminanceThreshold={1.1}/><Vignette eskil={false} offset={.23} darkness={.36}/></EffectComposer>}
  </ThreeCanvas>;
 }
 function InkOverlay(){
