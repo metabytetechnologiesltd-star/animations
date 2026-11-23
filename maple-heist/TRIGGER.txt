@@ -1,1 +1,1 @@
-2026-11-23 retry 3: Blender GLB exporter NumPy dependency installed
+2026-11-23 retry 4: fixed isolated Blender 4.0 Python NumPy import path
