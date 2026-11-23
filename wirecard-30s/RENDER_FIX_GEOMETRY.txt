@@ -1,0 +1,1 @@
+2026-11-23 geometry pass: preserve existing ElevenLabs vocals and word captions, use Blender glTF export_yup=False, verify true 3D scene visibility before render
