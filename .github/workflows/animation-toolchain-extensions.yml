@@ -1,0 +1,89 @@
+name: Animation pipeline extensions | Additive verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "maple-heist/package.json"
+      - "pipeline-tools/**"
+      - ".github/workflows/animation-toolchain-extensions.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  js-motion-and-finishing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing Blender/Three.js/Remotion project plus three additive libraries
+        working-directory: maple-heist
+        run: |
+          npm install --no-audit --no-fund
+          npm run verify:extensions
+      - name: Confirm dependencies resolve without changing React 18 / React Three Fiber 8
+        working-directory: maple-heist
+        run: |
+          npm ls --depth=0
+          node -e "const p=require('./package.json'); if(p.dependencies.react!=='18.3.1'||p.dependencies['@react-three/fiber']!=='8.18.0') process.exit(1);"
+      - name: Install optional HyperFrames module separately from Remotion
+        working-directory: pipeline-tools/hyperframes
+        run: |
+          npm install --no-audit --no-fund
+          npm run verify
+      - name: Capture add-on software version manifest
+        run: |
+          mkdir -p pipeline-tools/diagnostics
+          node --version > pipeline-tools/diagnostics/versions.txt
+          npm --version >> pipeline-tools/diagnostics/versions.txt
+          cd maple-heist
+          npm ls --depth=0 >> ../pipeline-tools/diagnostics/versions.txt
+          cd ../pipeline-tools/hyperframes
+          npm ls --depth=0 >> ../diagnostics/versions.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: animation-extensions-js-verification
+          path: pipeline-tools/diagnostics/versions.txt
+          if-no-files-found: warn
+          retention-days: 7
+
+  whisperx-alignment-cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare audio dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg libsndfile1
+          python -m pip install --upgrade pip
+      - name: Install CPU-only PyTorch before WhisperX
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchaudio
+      - name: Install WhisperX optional word-level alignment tool
+        run: |
+          python -m pip install -r pipeline-tools/whisperx/requirements.txt
+          python -c "import whisperx; import importlib.metadata as m; print('WHISPERX_IMPORT_OK',m.version('whisperx'))"
+          whisperx --help > /tmp/whisperx-help.txt
+          test -s /tmp/whisperx-help.txt
+      - name: Capture Python and WhisperX versions
+        run: |
+          mkdir -p pipeline-tools/diagnostics
+          python --version > pipeline-tools/diagnostics/whisperx-versions.txt
+          python -m pip show whisperx torch torchaudio >> pipeline-tools/diagnostics/whisperx-versions.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: animation-extensions-whisperx-verification
+          path: pipeline-tools/diagnostics/whisperx-versions.txt
+          if-no-files-found: warn
+          retention-days: 7
