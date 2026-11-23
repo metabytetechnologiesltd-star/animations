@@ -26,11 +26,11 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run verify:extensions
-      - name: Confirm dependencies resolve without changing React 18 / React Three Fiber 8
+      - name: Confirm strict React 19 / Fiber 9 dependency resolution and modern postprocessing
         working-directory: maple-heist
         run: |
           npm ls --depth=0
-          node -e "const p=require('./package.json'); if(p.dependencies.react!=='18.3.1'||p.dependencies['@react-three/fiber']!=='8.18.0') process.exit(1);"
+          node ../pipeline-tools/verify-react19.cjs
       - name: Install optional HyperFrames module separately from Remotion
         working-directory: pipeline-tools/hyperframes
         run: |

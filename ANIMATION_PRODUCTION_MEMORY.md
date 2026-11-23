@@ -9,14 +9,14 @@ We are **not replacing** our proven pipeline. The original tested chain must rem
 
 - Existing real proof: `.github/workflows/maple-heist-20s.yml` succeeded in rendering the original 20-second Great Maple Syrup Heist test with Blender, Three.js, Remotion, ElevenLabs and FFmpeg.
 - Never claim a dependency is unavailable merely because it is not installed locally. Use the proven GitHub Actions Linux runners, which can install dependencies per run.
-- Keep React 18 + React Three Fiber 8 + Remotion 4 compatible until a deliberate tested migration is approved. Do not force React 19 into the working production.
+- React 19 + React Three Fiber 9 upgrade is being tested on the dedicated `upgrade/react19-r3f9` branch. Merge only after strict dependency checks AND the full movie regression pass; the original React18/R3F8 render remains the fallback.
 - **HeyGen, if used, is voice-only** for Second Guess; do not generate the animation through HeyGen.
 - Maintain a distinct original aesthetic, *not* a direct copy of the channel being reverse-engineered. Borrow narrative architecture (hooks, editing rhythm and evidence-based explanations), not protected artwork or specific scripts.
 - Second Guess's established detailed painterly/inked thriller artwork must not be silently replaced by flat vector cartoons.
 
 ## FIVE NEW HIGH-PRIORITY CAPABILITIES — additive layers
-1. **Theatre.js** (`@theatre/core`, `@theatre/r3f`; `@theatre/studio` authoring-only) — time-keyed 3D camera and rig/prop animation; save approved camera takes as project data. **Never assume auto-rigging or real hand contact**.
-2. **react-postprocessing** (`@react-three/postprocessing`, `postprocessing`) — restrained bloom, vignette, focus/depth, subtle grading. Use a compatible 2.x package on React 18 + Fiber 8; 3.x currently expects React 19 + Fiber 9. Quality gate: do not obscure the subject or hide action mistakes with effects.
+1. **Theatre.js** (`@theatre/core`; `@theatre/studio` authoring-only) — time-keyed 3D camera and rig/prop animation; save approved camera takes as project data. **Never assume auto-rigging or real hand contact**. Legacy `@theatre/r3f@0.7.2` requires Fiber8; preserve that legacy editor separately and use Theatre Core values or an explicit adapter under Fiber9. Never force-install the old bridge into React19.
+2. **react-postprocessing** (`@react-three/postprocessing`, `postprocessing`) — restrained bloom, vignette, focus/depth, subtle grading. Use 2.x with React18/Fiber8, and 3.x with React19/Fiber9 following peer requirements. Quality gate: do not obscure the subject or hide action mistakes with effects.
 3. **GSAP** (`gsap`) — deterministic motion graphics, transforms and in-scene overlays. In Remotion render, seek GSAP timelines to each frame; don't rely on browser clocks or autoplay.
 4. **WhisperX** (Python env in `pipeline-tools/whisperx/`) — speech transcription and word-level alignment for ElevenLabs performances, subtitle timing, and lip-sync input; CPU-only allowed for short tests, GPU optional for scale. This is an **optional separate job**, not a mandatory dependency of each film render. Speech alignment itself does **not** generate lip movement; a proper facial rig still required.
 5. **HyperFrames** (isolated in `pipeline-tools/hyperframes/`) — optional HTML/CSS/SVG/JavaScript motion-graphics segments (maps, screen displays, numbers, charts, overlays). **Remotion remains the master timeline**. Do not use HyperFrames for HeyGen video generation.
@@ -68,3 +68,10 @@ Evidence:
 - Existing end-to-end movie render (unchanged): https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45092077915
 
 **Do not conflate installation with film quality.** This audit proves the packages and CLI work, not yet that Theatre.js/postprocessing/HyperFrames improve a rendered film shot. Separate visual comparison tests are needed before adopting any effect by default.
+
+## React19/Fiber9 migration (branch verification)
+- Upgrade branch: `upgrade/react19-r3f9`.
+- Target: React/DOM 19.2.8, Fiber 9.7.0, Drei 10.7.9, Three 0.182.0, postprocessing 3.2.2, core postprocessing 6.39.3, and Remotion 4.0.545 unchanged.
+- Theatre 0.7.2 Core and Studio retained; incompatible `@theatre/r3f` bridge isolated for React18/Fiber8-only legacy editing, not loaded in the upgraded film.
+- CI must re-render original 480-frame 20-second film with **approved existing voice/audio mix**, using `REMOTION_REACT19_UPGRADE_REGRESSION=1`; normal ElevenLabs audio path stays intact outside regression mode.
+- Branch workflow: `.github/workflows/react19-r3f9-regression.yml`. Do not claim upgrade merged until CI passes full video and sound checks.

@@ -1,0 +1,88 @@
+name: React19 Fiber9 - Fast 3D + Postprocessing Smoke
+
+on:
+  push:
+    branches: [upgrade/react19-r3f9]
+    paths:
+      - ".github/workflows/react19-compat-quick.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Strict npm installation and exact version verification
+        working-directory: maple-heist
+        run: |
+          npm install --no-audit --no-fund
+          node ../pipeline-tools/verify-react19.cjs
+      - name: Compose tiny Remotion/R3F9/Postprocessing test with audio
+        working-directory: maple-heist
+        run: |
+          mkdir -p public out
+          sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
+          ffmpeg -nostdin -hide_banner -loglevel error -f lavfi -i "sine=frequency=440:duration=2" -y public/compat-tone.wav
+          cat > src/upgrade-smoke.jsx <<'EOF'
+          import React from "react";
+          import {registerRoot,Composition,AbsoluteFill,useCurrentFrame,Audio,staticFile} from "remotion";
+          import {ThreeCanvas} from "@remotion/three";
+          import {EffectComposer,Bloom} from "@react-three/postprocessing";
+          function Scene(){
+            const f=useCurrentFrame();
+            return <AbsoluteFill>
+              <ThreeCanvas width={640} height={360} camera={{position:[0,0,5],fov:44}} gl={{antialias:true}}>
+                <color attach="background" args={["#0a1b2c"]}/>
+                <ambientLight intensity={1.9}/>
+                <directionalLight position={[3,5,4]} intensity={3} color="#ffc477"/>
+                <mesh rotation={[.18+f*.008,f*.026,.1]} position={[Math.sin(f/14)*.38,0,0]}>
+                  <boxGeometry args={[1.3,1.3,1.3]}/>
+                  <meshStandardMaterial color="#e0a45c" metalness={.46} roughness={.28}/>
+                </mesh>
+                <EffectComposer><Bloom intensity={.42} luminanceThreshold={.75}/></EffectComposer>
+              </ThreeCanvas>
+              <Audio src={staticFile("compat-tone.wav")}/>
+              <div style={{position:"absolute",top:16,left:18,fontSize:18,color:"#fff",fontFamily:"Arial"}}>React19 + R3F9 + postprocessing3</div>
+            </AbsoluteFill>;
+          }
+          const Root=()=> <Composition id="UpgradeSmoke" component={Scene} fps={24} durationInFrames={48} width={640} height={360}/>;
+          registerRoot(Root);
+          EOF
+      - name: Render 2-second visual and audio smoke on CPU-only runner
+        working-directory: maple-heist
+        run: |
+          npx remotion browser ensure
+          npx remotion render src/upgrade-smoke.jsx UpgradeSmoke out/React19_R3F9_Postprocessing_Smoke.mp4 --gl=swangle --concurrency=1 --codec=h264 --crf=21 --log=error
+      - name: Verify exactly 48 frames, 2 seconds, video and audio
+        working-directory: maple-heist
+        run: |
+          ffprobe -v error -show_entries stream=codec_type,nb_frames,width,height -show_entries format=duration -of json out/React19_R3F9_Postprocessing_Smoke.mp4 > out/smoke.json
+          python3 - <<'PY'
+          import json
+          j=json.load(open("out/smoke.json"));v=next(s for s in j["streams"] if s["codec_type"]=="video")
+          assert int(v["nb_frames"])==48,v
+          assert v["width"]==640 and v["height"]==360,v
+          assert abs(float(j["format"]["duration"])-2)<.06,j["format"]
+          assert any(s["codec_type"]=="audio" for s in j["streams"])
+          print("REACT19_FIBER9_POSTPROCESSING3_AUDIO_VERIFIED")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: React19-R3F9-Postprocessing-Quick-Render
+          path: |
+            maple-heist/out/React19_R3F9_Postprocessing_Smoke.mp4
+            maple-heist/out/smoke.json
+          if-no-files-found: warn
+          retention-days: 7
