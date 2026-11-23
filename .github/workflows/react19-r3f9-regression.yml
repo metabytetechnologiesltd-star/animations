@@ -1,0 +1,106 @@
+name: React 19 + R3F 9 - Full Film Regression
+
+on:
+  push:
+    branches: [upgrade/react19-r3f9]
+    paths:
+      - "maple-heist/**"
+      - "pipeline-tools/**"
+      - ".github/workflows/react19-r3f9-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  upgrade-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+      REACT19_UPGRADE_REGRESSION: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Strict-install React19 / R3F9 and all modern compatible packages
+        working-directory: maple-heist
+        run: |
+          npm install --no-audit --no-fund
+          node ../pipeline-tools/verify-react19.cjs
+          npm ls --depth=0
+      - name: Install Blender, FFmpeg, software-GL build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender ffmpeg python3-numpy xvfb libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
+          blender --version | head -3
+          ffmpeg -version | head -1
+      - name: Regenerate original barrel asset with Blender
+        working-directory: maple-heist
+        run: |
+          mkdir -p public out
+          blender -b -t 2 --python blender/build_barrel.py > out/blender.log 2>&1
+          test -s public/barrel.glb
+          file public/barrel.glb
+      - name: Recover existing approved Maple Heist voice mix from successful film run
+        working-directory: maple-heist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p out/baseline
+          gh api -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/actions/artifacts/14781653629/zip" > out/baseline.zip
+          unzip -q out/baseline.zip -d out/baseline
+          ORIGINAL_VIDEO="$(find out/baseline -name 'MapleHeist_20s.mp4' -type f -print -quit)"
+          test -n "$ORIGINAL_VIDEO"
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$ORIGINAL_VIDEO"
+          ffmpeg -nostdin -hide_banner -loglevel error -y -i "$ORIGINAL_VIDEO" -map 0:a:0 -c:a aac -b:a 192k public/regression-reference.m4a
+          ffprobe -v error -show_entries stream=codec_name -show_entries format=duration -of json public/regression-reference.m4a
+      - name: Install Remotion headless browser and render key action frame
+        working-directory: maple-heist
+        run: |
+          npx remotion browser ensure
+          npx remotion still src/index.jsx MapleHeist20 out/React19_Fiber9_Keyframe.png --frame=230 --gl=swangle
+          file out/React19_Fiber9_Keyframe.png
+      - name: Re-render complete original 20-second animated story using React19 Fiber9
+        working-directory: maple-heist
+        run: |
+          npx remotion render src/index.jsx MapleHeist20 out/MapleHeist_React19_Fiber9_20s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=21 --log=error
+      - name: Verify 480 frames, 20 seconds, sound, resolution; extract review frames
+        working-directory: maple-heist
+        run: |
+          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_type,width,height,nb_frames,r_frame_rate -of json out/MapleHeist_React19_Fiber9_20s.mp4 > out/probe.json
+          python - <<'PY'
+          import json
+          p=json.load(open('out/probe.json'))
+          assert abs(float(p['format']['duration'])-20.0)<.06,p['format']
+          v=next(x for x in p['streams'] if x['codec_type']=='video')
+          assert v['width']==1280 and v['height']==720, v
+          assert int(v['nb_frames'])==480,v
+          assert any(x['codec_type']=='audio' for x in p['streams']),p['streams']
+          print('REACT19_R3F9_FULL_FILM_VERIFIED',p)
+          PY
+          for n in 70 230 390; do
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i out/MapleHeist_React19_Fiber9_20s.mp4 -vf "select=eq(n\\,$n)" -vsync 0 -frames:v 1 out/frame_$n.png
+            test -s out/frame_$n.png
+          done
+      - name: Publish downloadable regression film and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: React19-Fiber9-Full-Film-Regression
+          path: |
+            maple-heist/out/MapleHeist_React19_Fiber9_20s.mp4
+            maple-heist/out/React19_Fiber9_Keyframe.png
+            maple-heist/out/frame_*.png
+            maple-heist/out/probe.json
+            maple-heist/out/blender.log
+          if-no-files-found: warn
+          retention-days: 7
