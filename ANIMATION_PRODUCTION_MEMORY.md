@@ -51,3 +51,20 @@ We are **not replacing** our proven pipeline. The original tested chain must rem
 
 ## Installation status protocol
 After editing dependencies, do not say "installed and verified" until GitHub Actions job for each target succeeds; otherwise report "declared, installation/testing pending or failed" with the failing step, and fix it. Use the CI audit as source of truth.
+
+
+## Verified CI installation audit — 2026-11-23
+
+All five high-priority capabilities have been installed and successfully smoke-tested in GitHub Actions across the additive verification runs:
+- **Theatre.js**: `@theatre/core@0.7.2`, `@theatre/r3f@0.7.2`, `@theatre/studio@0.7.2`.
+- **react-postprocessing**: `@react-three/postprocessing@2.16.7` plus `postprocessing@6.39.3` (deliberately compatible with React18/Fiber8/Three0.180).
+- **GSAP**: `gsap@3.15.1`; a paused timeline seek to 0.5 sec was tested and returned the expected interpolated value 5.
+- **HyperFrames**: `hyperframes@0.9.83`; installed in an isolated module, CLI help test passed; does **not** replace Remotion.
+- **WhisperX**: `whisperx@3.8.6`, Python `3.12.16`; installed with PyTorch + Torchaudio, verified Python import and CLI help on a GitHub runner. CPU word-level alignment on real speech has **not yet been benchmarked**.
+
+Evidence:
+- JavaScript/HyperFrames passing CI: https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45095632756
+- WhisperX passing CI: https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45095459949
+- Existing end-to-end movie render (unchanged): https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45092077915
+
+**Do not conflate installation with film quality.** This audit proves the packages and CLI work, not yet that Theatre.js/postprocessing/HyperFrames improve a rendered film shot. Separate visual comparison tests are needed before adopting any effect by default.
