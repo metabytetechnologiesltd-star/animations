@@ -5,21 +5,21 @@
   "scripts": {
     "render": "remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=20",
     "still": "remotion still src/index.jsx MapleHeist20 out/poster.png --frame=227 --gl=swangle",
-    "verify:extensions": "node ../pipeline-tools/verify-js.cjs"
+    "verify:extensions": "node ../pipeline-tools/verify-js.cjs",
+    "verify:upgrade": "node ../pipeline-tools/verify-react19.cjs"
   },
   "dependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "remotion": "4.0.545",
     "@remotion/cli": "4.0.545",
     "@remotion/three": "4.0.545",
-    "three": "^0.180.0",
-    "@react-three/fiber": "8.18.0",
-    "@react-three/drei": "9.122.0",
+    "three": "0.182.0",
+    "@react-three/fiber": "9.7.0",
+    "@react-three/drei": "10.7.9",
     "@theatre/core": "0.7.2",
-    "@theatre/r3f": "0.7.2",
     "@theatre/studio": "0.7.2",
-    "@react-three/postprocessing": "2.16.7",
+    "@react-three/postprocessing": "3.2.2",
     "postprocessing": "6.39.3",
     "gsap": "3.15.1"
   },
