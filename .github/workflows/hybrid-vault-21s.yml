@@ -1,0 +1,106 @@
+name: Hybrid 3D-2D Original Film | The Impossible Frame | 21s
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [film/hybrid-3d2d-impossible-frame]
+    paths: ["hybrid-vault/START.md"]
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Blender, FFmpeg and software WebGL prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender ffmpeg python3-numpy xvfb libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
+          blender --version | head -3
+          ffmpeg -version | head -2
+      - name: Install strictly compatible upgraded React19 / Fiber9 production stack
+        working-directory: hybrid-vault
+        run: |
+          npm install --no-audit --no-fund
+          node ../pipeline-tools/verify-react19.cjs
+          node -e "console.log('STUDIO_BUNDLE_OK',require.resolve('@theatre/studio'))"
+      - name: Export original GLB museum exhibit from Blender
+        working-directory: hybrid-vault
+        run: |
+          mkdir -p public/voices out
+          blender -b -t 2 --python blender/museum_display.py > out/blender.log 2>&1
+          test -s public/vault_display.glb
+          file public/vault_display.glb
+      - name: Download four connected ElevenLabs natural speech performances
+        working-directory: hybrid-vault
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          data=json.load(open('voice_fetch_urls.json'))
+          os.makedirs('public/voices',exist_ok=True)
+          for name,url in data.items():
+            assert url.startswith('https://elevenlabsusercontent.com/')
+            request=urllib.request.Request(url,headers={'User-Agent':'GitHubActions-Hybrid-Film'})
+            with urllib.request.urlopen(request,timeout=90) as reply:audio=reply.read()
+            assert len(audio)>6000, (name,len(audio))
+            with open('public/voices/'+name,'wb') as f:f.write(audio)
+            print('NATURAL_VOICE_IMPORTED',name,len(audio))
+          PY
+          for f in public/voices/*.mp3; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$f"; done
+      - name: Generate original action-timed sound effects and ambience
+        working-directory: hybrid-vault
+        run: |
+          python -m pip install -q numpy
+          python make_sound.py
+          test -s public/sound_design.wav
+      - name: Ensure headless Chromium and render four camera-action storyboard checks
+        working-directory: hybrid-vault
+        run: |
+          npx remotion browser ensure
+          for frame in 44 124 205 410; do
+            npx remotion still src/index.jsx ImpossibleFrame21 out/frame_$frame.png --frame=$frame --gl=swangle
+            test -s out/frame_$frame.png
+          done
+      - name: Render 21-second cinematic hybrid 3D and 2D animated film
+        working-directory: hybrid-vault
+        run: |
+          npx remotion render src/index.jsx ImpossibleFrame21 out/The_Impossible_Frame_Hybrid_21s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=20 --log=error
+      - name: Verify exactly 504 frames, 21 seconds, 16:9 720p, AAC audio
+        working-directory: hybrid-vault
+        run: |
+          ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,nb_frames,r_frame_rate -show_entries format=duration,size -of json out/The_Impossible_Frame_Hybrid_21s.mp4 | tee out/media_probe.json
+          python - <<'PY'
+          import json
+          d=json.load(open('out/media_probe.json'))
+          assert abs(float(d['format']['duration'])-21)<.06,d
+          v=next(x for x in d['streams'] if x['codec_type']=='video')
+          assert v['width']==1280 and v['height']==720,v
+          assert int(v['nb_frames'])==504,v
+          assert any(x['codec_type']=='audio' for x in d['streams']),d
+          print('HYBRID_3D2D_21S_FILM_WITH_VOICES_VERIFIED')
+          PY
+      - name: Upload actual moving picture MP4, review frames, source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Impossible-Frame-Hybrid-3D2D-21sec
+          path: |
+            hybrid-vault/out/The_Impossible_Frame_Hybrid_21s.mp4
+            hybrid-vault/out/frame_*.png
+            hybrid-vault/out/media_probe.json
+            hybrid-vault/out/blender.log
+          if-no-files-found: warn
+          retention-days: 7
