@@ -37,6 +37,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund --legacy-peer-deps
           node -e "const fs=require('fs'); for (let p of ['remotion','@remotion/cli','@remotion/three','three','@react-three/fiber','@react-three/drei']) console.log('VERIFIED_DEP',p,JSON.parse(fs.readFileSync('node_modules/'+p+'/package.json')).version)"
+          npm run verify:extensions
       - name: Generate original 3D barrel model in Blender
         working-directory: maple-heist
         run: |
