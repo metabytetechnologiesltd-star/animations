@@ -1,0 +1,25 @@
+{
+  "name": "wirecard-hybrid-documentary-30s",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "node ../pipeline-tools/verify-react19.cjs",
+    "render": "remotion render src/index.jsx Wirecard30 out/Wirecard_30s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=20"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.545",
+    "@remotion/cli": "4.0.545",
+    "@remotion/three": "4.0.545",
+    "three": "0.182.0",
+    "@react-three/fiber": "9.7.0",
+    "@react-three/drei": "10.7.9",
+    "@theatre/core": "0.7.2",
+    "@theatre/studio": "0.7.2",
+    "@react-three/postprocessing": "3.2.2",
+    "postprocessing": "6.39.3",
+    "gsap": "3.15.1"
+  },
+  "devDependencies": {}
+}
