@@ -1,1 +1,1 @@
-2026-11-23 run #1: Wirecard original 30-second hybrid 3D2D documentary with natural voices and burned captions
+2026-11-23 run #2: correct subtitle count assertion; same original Wirecard 30s hybrid film and voices
