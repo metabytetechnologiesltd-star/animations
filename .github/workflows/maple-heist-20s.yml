@@ -1,0 +1,103 @@
+name: Original Documentary | Maple Syrup Heist | 20s
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["maple-heist/TRIGGER.txt"]
+
+permissions:
+  contents: read
+
+jobs:
+  animate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install and verify Blender, FFmpeg, graphics libraries
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender ffmpeg xvfb libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
+          blender --version | head -3
+          ffmpeg -version | head -2
+          node --version
+      - name: Install Remotion and Three.js with exact supported versions
+        working-directory: maple-heist
+        run: |
+          npm install --no-audit --no-fund --legacy-peer-deps
+          node -e "for (let p of ['remotion','@remotion/cli','@remotion/three','three','@react-three/fiber','@react-three/drei']) console.log('VERIFIED_DEP',p,require(p+'/package.json').version)"
+      - name: Generate original 3D barrel model in Blender
+        working-directory: maple-heist
+        run: |
+          mkdir -p public/voices out
+          blender -b -t 2 --python blender/build_barrel.py 2>&1 | tee out/blender_export.log
+          test -s public/barrel.glb
+          file public/barrel.glb
+      - name: Recover actual ElevenLabs human-voice recordings
+        working-directory: maple-heist
+        run: |
+          python - <<'PY'
+          import json,urllib.request,os
+          data=json.load(open('voice_fetch_urls.json'))
+          os.makedirs('public/voices',exist_ok=True)
+          for i,(fname,url) in enumerate(data.items()):
+            assert url.startswith('https://elevenlabsusercontent.com/')
+            req=urllib.request.Request(url,headers={'User-Agent':'GitHubActions-Documentary-Renderer'})
+            with urllib.request.urlopen(req,timeout=90) as resp:
+              mp3=resp.read()
+            assert len(mp3)>6000, f'Empty/invalid ElevenLabs audio: {fname}'
+            with open('public/voices/'+fname,'wb') as f:f.write(mp3)
+            print('ELEVENLABS_CLIP_OK',fname,len(mp3))
+          PY
+          for f in public/voices/*.mp3; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$f"; done
+      - name: Generate contact-synchronized original Foley
+        working-directory: maple-heist
+        run: |
+          python -m pip install --quiet numpy
+          python generate_foley.py
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 public/foley.wav
+      - name: Install Chromium headless and render an approval frame
+        working-directory: maple-heist
+        run: |
+          npx remotion browser ensure
+          npx remotion still src/index.jsx MapleHeist20 out/Approval_Frame.png --frame=230 --gl=angle
+      - name: Render complete 20-second video with Remotion and Three.js
+        working-directory: maple-heist
+        run: |
+          npx remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=angle --concurrency=2 --codec=h264 --crf=21 --log=error
+      - name: Verify exact runtime, frame rate, audio, image size
+        working-directory: maple-heist
+        run: |
+          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_type,width,height,nb_frames,r_frame_rate -of json out/MapleHeist_20s.mp4 | tee out/probe.json
+          python - <<'PY'
+          import json
+          j=json.load(open('out/probe.json'))
+          assert abs(float(j['format']['duration'])-20)<.05,j['format']['duration']
+          assert any(s.get('codec_type')=='audio' for s in j['streams'])
+          v=next(s for s in j['streams'] if s['codec_type']=='video')
+          assert v['width']==1280 and v['height']==720,v
+          print('RENDER_VERIFIED',j['format']['duration'],v['width'],v['height'])
+          PY
+      - name: Upload playable MP4, visual review, and diagnostic proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Maple-Heist-20s-Final-Video
+          path: |
+            maple-heist/out/MapleHeist_20s.mp4
+            maple-heist/out/Approval_Frame.png
+            maple-heist/out/probe.json
+            maple-heist/out/blender_export.log
+          if-no-files-found: warn
+          retention-days: 7
