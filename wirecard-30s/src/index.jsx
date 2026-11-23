@@ -14,7 +14,16 @@ const clamp=(x)=>Math.max(0,Math.min(1,x));
 const ease=x=>{const v=clamp(x);return v*v*(3-2*v)};
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const cinemaDark="#061823",warm="#e5b87a",red="#ef6b5b";
-const project=getProject("The 1.9 Billion Mirage — Wirecard");
+const project=getProject("The 1.9 Billion Mirage — Wirecard", {state:{
+  definitionVersion:"0.4.0",
+  revisionHistory:["wirecard-finance-original-v1"],
+  sheetsById:{
+    Documentary_Cameras:{
+      staticOverrides:{byObject:{}},
+      sequence:{type:"PositionalSequence",subUnitsPerUnit:24,length:30,tracksByObject:{}}
+    }
+  }
+}});
 const theatre=project.sheet("Documentary_Cameras");
 const cameraRig=theatre.object("CinematicCamera",{
  cameraX:0,cameraY:2,cameraZ:9,aimX:0,aimY:0,aimZ:0,
