@@ -1,0 +1,187 @@
+name: Wirecard 30s Hybrid | Reuse Approved Voice Assets & Render
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [film/wirecard-hybrid-finance-30s]
+    paths: ["wirecard-30s/RENDER_RETRY.txt"]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  visual-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: Wirecard-30s-Prepared-Assets
+          run-id: 45115854518
+          github-token: ${{ github.token }}
+          path: wirecard-30s/public
+      - name: Strict upgraded dependency install including Theatre Core/Studio and GSAP
+        working-directory: wirecard-30s
+        run: |
+          npm install --no-audit --no-fund
+          node ../pipeline-tools/verify-react19.cjs
+          node -e "console.log('THEATRE_STUDIO_AVAILABLE',require.resolve('@theatre/studio'))"
+      - name: Render four proof frames from different shots with subtitles
+        working-directory: wirecard-30s
+        run: |
+          mkdir -p out
+          npx remotion browser ensure
+          for frame in 70 228 354 620; do
+            npx remotion still src/index.jsx Wirecard30 out/proof_$frame.png --frame=$frame --gl=swangle
+            test -s out/proof_$frame.png
+          done
+          python - <<'PY'
+          import os
+          for n in [70,228,354,620]:
+            size=os.path.getsize(f"out/proof_{n}.png")
+            assert size>26000,(n,size)
+            print("PROOF_FRAME_HAS_VISUAL_CONTENT",n,size)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wirecard-30s-Visual-Proofs
+          path: wirecard-30s/out/proof_*.png
+          retention-days: 7
+
+  render-chunks:
+    needs: visual-preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {part: 0, start: 0, end: 179}
+          - {part: 1, start: 180, end: 359}
+          - {part: 2, start: 360, end: 539}
+          - {part: 3, start: 540, end: 719}
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: Wirecard-30s-Prepared-Assets
+          run-id: 45115854518
+          github-token: ${{ github.token }}
+          path: wirecard-30s/public
+      - name: Install exact React19 / Fiber9 / Remotion / Three.js packages
+        working-directory: wirecard-30s
+        run: npm install --no-audit --no-fund
+      - name: Render native 1280x720 H264 film frames with hard-burned karaoke captions
+        working-directory: wirecard-30s
+        run: |
+          mkdir -p out
+          npx remotion browser ensure
+          npx remotion render src/index.jsx Wirecard30 out/part_${{ matrix.part }}.mp4 --frames=${{ matrix.start }}-${{ matrix.end }} --gl=swangle --concurrency=2 --codec=h264 --crf=20 --log=error
+          test -s out/part_${{ matrix.part }}.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wirecard-30s-Part-${{ matrix.part }}
+          path: wirecard-30s/out/part_${{ matrix.part }}.mp4
+          retention-days: 7
+          if-no-files-found: error
+
+  assemble-and-verify:
+    needs: render-chunks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Wirecard-30s-Part-*
+          path: wirecard-30s/out
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: Wirecard-30s-Prepared-Assets
+          run-id: 45115854518
+          github-token: ${{ github.token }}
+          path: wirecard-30s/public
+      - uses: actions/download-artifact@v4
+        with:
+          name: Wirecard-30s-SRT
+          run-id: 45115854518
+          github-token: ${{ github.token }}
+          path: wirecard-30s
+      - name: Install FFmpeg and Pillow for objective video checks
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install --quiet pillow
+      - name: Concatenate four 7.5-second segments and synchronize original ElevenLabs, Foley
+        working-directory: wirecard-30s
+        run: |
+          cd out
+          for i in 0 1 2 3; do test -s part_$i.mp4; printf "file 'part_%s.mp4'\n" "$i"; done > segments.txt
+          ffmpeg -nostdin -hide_banner -loglevel error -y -f concat -safe 0 -i segments.txt -c:v copy -an silent_30s.mp4
+          ffmpeg -nostdin -hide_banner -loglevel error -y -i silent_30s.mp4 -i ../public/dialogue_mix.wav -i ../public/foley.wav \
+            -filter_complex "[1:a]volume=1.00[v];[2:a]volume=0.44[f];[v][f]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.90[a]" \
+            -map 0:v:0 -map "[a]" -c:v copy -c:a aac -b:a 192k -ar 48000 -t 30.0 -movflags +faststart Wirecard_The_1_9_Billion_Mirage_30s.mp4
+          ffprobe -v error -show_entries stream=index,codec_type,codec_name,width,height,nb_frames,r_frame_rate -show_entries format=duration,size -of json Wirecard_The_1_9_Billion_Mirage_30s.mp4 > final_probe.json
+      - name: Verify 30.00 seconds, 720 frames, audio stream, 16:9 and subtitle visual content
+        working-directory: wirecard-30s
+        run: |
+          python - <<'PY'
+          import json,os
+          d=json.load(open('out/final_probe.json'))
+          assert abs(float(d['format']['duration'])-30.0)<.08,d
+          v=next(s for s in d['streams'] if s['codec_type']=='video')
+          assert v['width']==1280 and v['height']==720
+          assert int(v['nb_frames'])==720,v
+          assert any(s['codec_type']=='audio' for s in d['streams'])
+          print("WIRECARD_30SEC_FULL_FILM_QA_VERIFIED",d)
+          PY
+          for t in 2.8 9.8 15.3 24.9 29.0; do
+            ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$t" -i out/Wirecard_The_1_9_Billion_Mirage_30s.mp4 -frames:v 1 "out/review_${t}.png"
+          done
+          python - <<'PY'
+          from PIL import Image,ImageStat
+          from pathlib import Path
+          for p in Path("out").glob("review_*.png"):
+            im=Image.open(p).convert("RGB")
+            assert im.size==(1280,720)
+            stat=ImageStat.Stat(im.crop((150,575,1130,700)))
+            vals=[min(s,80) for s in stat.stddev]
+            # Caption panel includes both dark fill and legible bright glyphs.
+            assert max(vals)>7,(p,vals)
+            print("BURNED_CAPTIONS_REGION_VERIFIED",p.name,vals)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Wirecard-30s-Final-Verified-Hybrid-Documentary
+          path: |
+            wirecard-30s/out/Wirecard_The_1_9_Billion_Mirage_30s.mp4
+            wirecard-30s/out/review_*.png
+            wirecard-30s/out/final_probe.json
+            wirecard-30s/captions.srt
+            wirecard-30s/voice_cue_sheet.json
+            wirecard-30s/shotlist.json
+          if-no-files-found: warn
+          retention-days: 7
