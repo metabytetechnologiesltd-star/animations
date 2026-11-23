@@ -12,8 +12,8 @@ const FPS=24,SECONDS=21,W=1280,H=720;
 const clamp=x=>Math.max(0,Math.min(1,x));
 const ease=x=>{let t=clamp(x);return t*t*(3-2*t)};
 const lerp=(a,b,t)=>a+(b-a)*clamp(t);
-function Box({p,s,color="#344b53",metalness=.12,roughness=.58,rotation=[0,0,0]}){
- return <mesh position={p} rotation={rotation} castShadow receiveShadow><boxGeometry args={s}/><meshStandardMaterial color={color} metalness={metalness} roughness={roughness}/></mesh>;
+function Box({p,s,color="#344b53",metalness=.12,roughness=.58,rotation=[0,0,0],opacity=1}){
+ return <mesh position={p} rotation={rotation} castShadow receiveShadow><boxGeometry args={s}/><meshStandardMaterial color={color} metalness={metalness} roughness={roughness} transparent={opacity<1} opacity={opacity}/></mesh>;
 }
 function Cy({p,a,color,rot=[0,0,0],metalness=.1,opacity=1}){
  return <mesh position={p} rotation={rot} castShadow receiveShadow><cylinderGeometry args={a}/><meshStandardMaterial color={color} roughness={.55} metalness={metalness} transparent={opacity<1} opacity={opacity}/></mesh>;
@@ -88,7 +88,7 @@ function Human({x,z=-.8,guard=false,time}){
  const dat=baselineAt(time),reach=guard?dat.touch:dat.point;
  const color=guard?"#263947":"#40545b",skin=guard?"#a47a65":"#b47d6a";
  const speaking=guard?(time>10.55&&time<12.75):(time>6.05&&time<10.1);
- const mouth=speaking?.02+.045*Math.abs(Math.sin(time*19)):.01;
+ const mouth=speaking?(0.02+0.045*Math.abs(Math.sin(time*19))):0.01;
  const elbow=[lerp(x+(guard?-.35:.35),guard?1.0:-.74,reach),lerp(-.65,-.50,reach),lerp(z+.05,-1.48,reach)];
  const hand=[lerp(x+(guard?-.65:.66),guard?.43:-.42,reach),lerp(-1.13,guard?.20:-.50,reach),lerp(z+.35,guard?-2.68:-3.04,reach)];
  return <group>
