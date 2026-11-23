@@ -103,7 +103,7 @@ function Overlay({sec,frame}){
 function Movie(){
  const f=useCurrentFrame(),sec=f/FPS;
  return <AbsoluteFill style={{background:"#061824"}}><Scene/><Overlay frame={f} sec={sec}/>
- {process.env.REACT19_UPGRADE_REGRESSION === "1"
+ {process.env.REMOTION_REACT19_UPGRADE_REGRESSION === "1"
     ? <Audio src={staticFile("regression-reference.m4a")}/>
     : <React.Fragment>
         <Audio src={staticFile("foley.wav")} volume={.38}/>

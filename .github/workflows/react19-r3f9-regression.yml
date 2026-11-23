@@ -21,7 +21,7 @@ jobs:
       CI: "1"
       LIBGL_ALWAYS_SOFTWARE: "1"
       MESA_GL_VERSION_OVERRIDE: "4.5"
-      REACT19_UPGRADE_REGRESSION: "1"
+      REMOTION_REACT19_UPGRADE_REGRESSION: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
