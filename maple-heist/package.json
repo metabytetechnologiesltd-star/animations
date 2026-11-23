@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "render": "remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=angle --concurrency=2 --codec=h264 --crf=20",
-    "still": "remotion still src/index.jsx MapleHeist20 out/poster.png --frame=227 --gl=angle"
+    "render": "remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=swangle --concurrency=2 --codec=h264 --crf=20",
+    "still": "remotion still src/index.jsx MapleHeist20 out/poster.png --frame=227 --gl=swangle"
   },
   "dependencies": {
     "react": "18.3.1",
