@@ -45,7 +45,7 @@ def cylinder(name,xyz,r,d,mat,segments=18,rot=None):
 def glb(name):
  bpy.ops.object.select_all(action="SELECT")
  dest=os.path.join(ROOT,name+".glb")
- bpy.ops.export_scene.gltf(filepath=dest,export_format="GLB",export_apply=True)
+ bpy.ops.export_scene.gltf(filepath=dest,export_format="GLB",export_apply=True,export_yup=False)
  print("PRODUCTION_GLTF_EXPORT",name,os.path.getsize(dest),dest)
 # Interior: office set matching mid shots, desk at z0 and actors left/right.
 clear()
