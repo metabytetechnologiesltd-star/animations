@@ -28,7 +28,7 @@ jobs:
       - name: Install and verify Blender, FFmpeg, graphics libraries
         run: |
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender ffmpeg xvfb libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender ffmpeg xvfb python3-numpy libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
           blender --version | head -3
           ffmpeg -version | head -2
           node --version
