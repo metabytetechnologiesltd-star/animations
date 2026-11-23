@@ -1,0 +1,1 @@
+2026-11-23 corrected headless Theatre Core saved state; reuse earlier verified asset artifact & natural ElevenLabs soundtrack
