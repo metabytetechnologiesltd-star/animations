@@ -1,17 +1,50 @@
-name: Wirecard 30s Hybrid | Reuse Approved Voice Assets & Render
+name: Wirecard 30s Hybrid | Correct 3D Coordinates & Render
 
 on:
   workflow_dispatch:
   push:
     branches: [film/wirecard-hybrid-finance-30s]
-    paths: ["wirecard-30s/RENDER_RETRY.txt"]
+    paths: ["wirecard-30s/RENDER_FIX_GEOMETRY.txt"]
 
 permissions:
   contents: read
   actions: read
 
 jobs:
+  fix-axis-and-preserve-voices:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Wirecard-30s-Prepared-Assets
+          run-id: 45115854518
+          github-token: ${{ github.token }}
+          path: wirecard-30s/public
+      - name: Install Blender with its glTF exporter dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy
+      - name: Re-export corrected Y-up 3D geometry without disturbing original voice clips or captions
+        working-directory: wirecard-30s
+        run: |
+          mkdir -p out
+          blender -b -t 2 --python blender/build_sets.py > out/blender-corrected.log 2>&1
+          test -s public/office.glb
+          test -s public/building.glb
+          test -s public/dialogue_mix.wav
+          test -s public/subtitle_cards.json
+          file public/office.glb public/building.glb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wirecard-30s-Corrected-Assets
+          path: wirecard-30s/public/
+          if-no-files-found: error
+          retention-days: 7
+
   visual-preflight:
+    needs: fix-axis-and-preserve-voices
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     env:
@@ -27,9 +60,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/download-artifact@v4
         with:
-          name: Wirecard-30s-Prepared-Assets
-          run-id: 45115854518
-          github-token: ${{ github.token }}
+          name: Wirecard-30s-Corrected-Assets
           path: wirecard-30s/public
       - name: Strict upgraded dependency install including Theatre Core/Studio and GSAP
         working-directory: wirecard-30s
@@ -52,6 +83,19 @@ jobs:
             size=os.path.getsize(f"out/proof_{n}.png")
             assert size>26000,(n,size)
             print("PROOF_FRAME_HAS_VISUAL_CONTENT",n,size)
+          PY
+      - name: Reject blank, flat, or fully occluded 3D scenes before encoding film
+        working-directory: wirecard-30s
+        run: |
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          from PIL import Image,ImageStat
+          for frame in (70,228,354):
+            im=Image.open(f"out/proof_{frame}.png").convert("RGB").crop((260,190,1020,500))
+            st=ImageStat.Stat(im)
+            avg=sum(st.stddev)/3
+            print("THREEJS_VISIBLE_SCENE_VARIANCE",frame,round(avg,2))
+            assert avg>12,("3D scene is hidden or blank, not safe for production",frame,avg)
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -82,9 +126,7 @@ jobs:
           node-version: "22"
       - uses: actions/download-artifact@v4
         with:
-          name: Wirecard-30s-Prepared-Assets
-          run-id: 45115854518
-          github-token: ${{ github.token }}
+          name: Wirecard-30s-Corrected-Assets
           path: wirecard-30s/public
       - name: Install exact React19 / Fiber9 / Remotion / Three.js packages
         working-directory: wirecard-30s
@@ -119,9 +161,7 @@ jobs:
           merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: Wirecard-30s-Prepared-Assets
-          run-id: 45115854518
-          github-token: ${{ github.token }}
+          name: Wirecard-30s-Corrected-Assets
           path: wirecard-30s/public
       - uses: actions/download-artifact@v4
         with:
