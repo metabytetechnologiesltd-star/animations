@@ -1,0 +1,58 @@
+name: Hybrid 3D scene recovery — quick visual proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [film/hybrid-3d2d-impossible-frame]
+    paths: ["hybrid-vault/DEBUG_TRIGGER"]
+
+permissions:
+  contents: read
+
+jobs:
+  visual-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      CI: "1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MESA_GL_VERSION_OVERRIDE: "4.5"
+      REMOTION_HYBRID_POSTPROCESS: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install core runtime / Blender
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy ffmpeg xvfb libgl1-mesa-dri libegl1 libgbm1 libnss3 libasound2t64
+      - name: Install production packages
+        working-directory: hybrid-vault
+        run: npm install --no-audit --no-fund
+      - name: Create Blender model for test frames
+        working-directory: hybrid-vault
+        run: |
+          mkdir -p public out
+          blender -b -t 2 --python blender/museum_display.py > out/blender.log 2>&1
+          test -s public/vault_display.glb
+      - name: Render three action frames WITHOUT software-WebGL postprocessing
+        working-directory: hybrid-vault
+        run: |
+          npx remotion browser ensure
+          for frame in 44 205 410; do
+            npx remotion still src/index.jsx ImpossibleFrame21 out/scene_$frame.png --frame=$frame --gl=swangle
+            test -s out/scene_$frame.png
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Hybrid-3D-Visibility-Review
+          path: |
+            hybrid-vault/out/scene_*.png
+            hybrid-vault/out/blender.log
+          if-no-files-found: warn
+          retention-days: 7
