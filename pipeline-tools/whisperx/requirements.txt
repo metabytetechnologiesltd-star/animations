@@ -1,0 +1,2 @@
+# Isolated CPU-first alignment add-on. Only on demand, never mandatory for basic animation rendering.
+whisperx>=3.7,<4.0
