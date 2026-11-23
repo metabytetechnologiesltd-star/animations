@@ -1,0 +1,12 @@
+{
+  "name": "animation-hyperframes-module",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Optional HyperFrames motion-graphics exporter; Remotion remains master film timeline",
+  "scripts": {
+    "verify": "hyperframes --help"
+  },
+  "dependencies": {
+    "hyperframes": "latest"
+  }
+}
