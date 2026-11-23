@@ -79,3 +79,15 @@ Evidence:
 - Modern postprocessing motion/audio regression: https://github.com/metabytetechnologiesltd-star/animations/actions/runs/45097852550 (2s/48 frames).
 - **Observed performance caveat**: full 1280×720 24fps 20s film render on CPU-only software WebGL took **15m51s on upgraded React19/R3F9** versus **6m09s** on the earlier React18/R3F8 stack. This is a material measured slowdown on these runs, not proof of a causal package regression. Profile GL/scene bottlenecks and experiment with faster GPU runners or batching before long-form release. Avoid claiming React19 makes our scenes faster.
 - Existing production renderer remains the same Blender -> Three.js -> Remotion -> ElevenLabs -> FFmpeg workflow; this is a version upgrade, not a replacement.
+
+
+## Selected animation TYPE for original long-form documentary/thriller channel — 2026-11-23
+The user explicitly chose **hybrid 3D/2D**, not fully photorealistic 3D or flat 2D graphics. Keep this visual decision consistent across story tests, character rigs, backgrounds, lighting and titles:
+- Actual spatial 3D environments and character/prop rigs built with Blender + Three.js/Fiber9; real camera staging and physics-informed actions.
+- Graphic-novel/painterly 2D ink hatching, textured materials, animated accent strokes and illustrated screen overlays that sit naturally within the 3D scene.
+- Strong cinematic teal/navy shadows and warm highlights with subtle post-processing rather than plasticky, flat cartoons.
+- Theatre.js Core for frame-addressable camera and action tracks; Studio available for authoring but not embedded into final video.
+- ElevenLabs natural human voices; authored Foley with exact on-contact cues; Remotion master timeline; FFmpeg output.
+- This selects an **animation category**, not a particular permanent protagonist. Do not confuse the user's previous request for three animation TYPES with three clothing variations of one character.
+- Preserve the pre-existing Second Guess Animations painted thriller identity; document the long-form documentary style independently instead of overwriting it.
+- First reference implementation: branch `film/hybrid-3d2d-impossible-frame`, folder `hybrid-vault/`. Rendering and user review determine whether its visual fidelity is approved; successful technical rendering alone is not artistic approval.
