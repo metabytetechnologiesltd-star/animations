@@ -1,1 +1,1 @@
-Hybrid 3D2D original film build #1 — 21 seconds, 24 fps, four natural ElevenLabs voices; Theatre Core + Studio authoring
+Hybrid 3D2D original film build #2 — fixed Reflection easing helper; 21 seconds, 504 frames, four existing ElevenLabs voice clips
