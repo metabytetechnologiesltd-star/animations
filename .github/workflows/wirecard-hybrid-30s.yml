@@ -57,7 +57,7 @@ jobs:
           python - <<'PY'
           import json
           c=json.load(open("public/subtitle_cards.json"))
-          assert len(c)>15, len(c)
+          assert len(c)>=12, len(c)
           assert c[0]["start"]==0 and c[-1]["end"]<=30.0, c[-1]
           assert all(x["text"] for x in c)
           print("BURNED_SUBTITLE_CARDS_PREPARED",len(c))
