@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "start": 0,
+    "end": 2.4,
+    "scene": "exterior Munich fintech HQ",
+    "action": "dolly toward office building",
+    "audio": "Narrator opening"
+  },
+  {
+    "id": 2,
+    "start": 2.4,
+    "end": 4.3,
+    "scene": "auditor office",
+    "action": "overhead into office; keyboard activity",
+    "audio": "key taps"
+  },
+  {
+    "id": 3,
+    "start": 4.3,
+    "end": 8.34,
+    "scene": "financial account monitor",
+    "action": "tight dolly to €1.9b evidence graphic",
+    "audio": "narrator"
+  },
+  {
+    "id": 4,
+    "start": 8.34,
+    "end": 11.55,
+    "scene": "female auditor closeup",
+    "action": "audio amplitude-controlled mouth, reaches report",
+    "audio": "female reenactment"
+  },
+  {
+    "id": 5,
+    "start": 11.55,
+    "end": 13.4,
+    "scene": "male executive closeup",
+    "action": "react and speak with audio-driven mouth",
+    "audio": "male reenactment"
+  },
+  {
+    "id": 6,
+    "start": 13.4,
+    "end": 15.78,
+    "scene": "paper file handoff",
+    "action": "real 3D report physically slides across desk, arm IK follows",
+    "audio": "paper scrape, contact"
+  },
+  {
+    "id": 7,
+    "start": 15.78,
+    "end": 19.27,
+    "scene": "trust account schematic",
+    "action": "2D animated international account route layered over 3D office",
+    "audio": "narrator"
+  },
+  {
+    "id": 8,
+    "start": 19.27,
+    "end": 22.35,
+    "scene": "documents under scrutiny",
+    "action": "physical stamp drops onto report",
+    "audio": "rubber stamp Foley"
+  },
+  {
+    "id": 9,
+    "start": 22.35,
+    "end": 25.18,
+    "scene": "balance disputed",
+    "action": "€1.9bn verification fail",
+    "audio": "narrator"
+  },
+  {
+    "id": 10,
+    "start": 25.18,
+    "end": 27.47,
+    "scene": "insolvency reveal",
+    "action": "wide office retreat and filing title",
+    "audio": "narrator"
+  },
+  {
+    "id": 11,
+    "start": 27.47,
+    "end": 30,
+    "scene": "final hook",
+    "action": "pullback, title The €1.9 Billion Mirage",
+    "audio": "narrator closing"
+  }
+]
