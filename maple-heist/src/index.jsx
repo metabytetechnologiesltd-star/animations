@@ -103,11 +103,15 @@ function Overlay({sec,frame}){
 function Movie(){
  const f=useCurrentFrame(),sec=f/FPS;
  return <AbsoluteFill style={{background:"#061824"}}><Scene/><Overlay frame={f} sec={sec}/>
- <Audio src={staticFile("foley.wav")} volume={.38}/>
- <Sequence from={0}><Audio src={staticFile("voices/01_narrator_open.mp3")}/></Sequence>
- <Sequence from={200}><Audio src={staticFile("voices/02_inspector.mp3")}/></Sequence>
- <Sequence from={264}><Audio src={staticFile("voices/03_colleague.mp3")}/></Sequence>
- <Sequence from={317}><Audio src={staticFile("voices/04_narrator_end.mp3")}/></Sequence>
+ {process.env.REACT19_UPGRADE_REGRESSION === "1"
+    ? <Audio src={staticFile("regression-reference.m4a")}/>
+    : <React.Fragment>
+        <Audio src={staticFile("foley.wav")} volume={.38}/>
+        <Sequence from={0}><Audio src={staticFile("voices/01_narrator_open.mp3")}/></Sequence>
+        <Sequence from={200}><Audio src={staticFile("voices/02_inspector.mp3")}/></Sequence>
+        <Sequence from={264}><Audio src={staticFile("voices/03_colleague.mp3")}/></Sequence>
+        <Sequence from={317}><Audio src={staticFile("voices/04_narrator_end.mp3")}/></Sequence>
+      </React.Fragment>}
  </AbsoluteFill>
 }
 const Root=()=> <Composition id="MapleHeist20" component={Movie} durationInFrames={480} fps={FPS} width={W} height={H}/>;
