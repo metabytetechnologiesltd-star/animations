@@ -20,7 +20,7 @@
     "@theatre/r3f": "0.7.2",
     "@theatre/studio": "0.7.2",
     "@react-three/postprocessing": "2.16.7",
-    "postprocessing": "6.36.0",
+    "postprocessing": "6.39.3",
     "gsap": "3.15.1"
   },
   "devDependencies": {}
