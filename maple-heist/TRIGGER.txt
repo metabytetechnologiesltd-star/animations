@@ -1,1 +1,1 @@
-2026-11-23 retry 4: fixed isolated Blender 4.0 Python NumPy import path
+2026-11-23 retry 5: Remotion --gl=swangle software WebGL GitHub Actions
