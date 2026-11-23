@@ -32,6 +32,7 @@ jobs:
         working-directory: maple-heist
         run: |
           mkdir -p public out
+          sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg
           ffmpeg -nostdin -hide_banner -loglevel error -f lavfi -i "sine=frequency=440:duration=2" -y public/compat-tone.wav
           cat > src/upgrade-smoke.jsx <<'EOF'
           import React from "react";
