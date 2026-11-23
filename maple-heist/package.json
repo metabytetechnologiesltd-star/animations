@@ -1,0 +1,20 @@
+{
+  "name": "maple-heist-20s",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "render": "remotion render src/index.jsx MapleHeist20 out/MapleHeist_20s.mp4 --gl=angle --concurrency=2 --codec=h264 --crf=20",
+    "still": "remotion still src/index.jsx MapleHeist20 out/poster.png --frame=227 --gl=angle"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.545",
+    "@remotion/cli": "4.0.545",
+    "@remotion/three": "4.0.545",
+    "three": "^0.180.0",
+    "@react-three/fiber": "8.18.0",
+    "@react-three/drei": "9.122.0"
+  },
+  "devDependencies": {}
+}
