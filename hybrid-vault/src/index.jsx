@@ -27,8 +27,8 @@ function PaintedWall(){
   const cv=document.createElement("canvas");cv.width=cv.height=512;
   const ctx=cv.getContext("2d");ctx.fillStyle="#182e38";ctx.fillRect(0,0,512,512);
   let seed=62353;const rand=()=>{seed=(seed*48271)%2147483647;return seed/2147483647};
-  for(let i=0;i<1400;i++){let x=rand()*512,y=rand()*512,w=3+rand()*38;
-   ctx.strokeStyle=(i%4===0?"rgba(232,174,112,.17)":"rgba(1,15,24,.19)");ctx.lineWidth=.5+rand()*2;
+  for(let i=0;i<720;i++){let x=rand()*512,y=rand()*512,w=3+rand()*38;
+   ctx.strokeStyle=(i%4===0?"rgba(232,174,112,.10)":"rgba(1,15,24,.13)");ctx.lineWidth=.5+rand()*2;
    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y-w*.34);ctx.stroke();
   }
   const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,2);return t;
@@ -58,15 +58,15 @@ function Exhibit(){
    <Box p={[0,.98,-5.13]} s={[1.54,.055,1.22]} color="#b8a684" metalness={.55} roughness={.2}/>
    {[-.77,.77].flatMap(x=>[-.59,.59].map(z=><Cy key={String(x)+String(z)} p={[x,.18,-5.13+z]} a={[.028,.028,1.62,12]} color="#bb9971" metalness={.7}/>))}
    <Box p={[0,-.25,-4.5]} s={[1.56,1.42,.035]} color="#47798b" metalness={.17} opacity={.7}/>
-   <pointLight position={[0,2.15,-5.1]} intensity={18} distance={5} color="#f0c999" decay={2}/>
+   <pointLight position={[0,1.7,-4.3]} intensity={45} distance={8} color="#f9d5a0" decay={2}/>
  </group>;
 }
 function Door({time}){
  const data=baselineAt(time);
  const turn=data.wheelTurn,open=data.doorOpen;
  return <group>
-  <Cy p={[0,.05,-3.5]} a={[1.73,1.73,.18,12]} rot={[Math.PI/2,0,0]} color="#8e8676" metalness={.82}/>
-  <Cy p={[0,.05,-3.33]} a={[1.51,1.51,.11,12]} rot={[Math.PI/2,0,0]} color="#0a1c25" metalness={.75}/>
+  <mesh position={[0,.05,-3.49]}><torusGeometry args={[1.69,.18,10,12]}/><meshStandardMaterial color="#a99d7f" roughness={.38} metalness={.80}/></mesh>
+  <mesh position={[0,.05,-3.33]}><torusGeometry args={[1.44,.085,8,12]}/><meshStandardMaterial color="#142631" roughness={.43} metalness={.74}/></mesh>
   {Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return <Cy key={i} p={[1.64*Math.cos(a),.05+1.64*Math.sin(a),-3.29]} a={[.06,.06,.1,8]} rot={[Math.PI/2,0,0]} color="#d7ad72" metalness={.88}/>})}
   <group position={[-1.46,.05,-3.17]} rotation={[0,-open,0]}>
    <group position={[1.46,0,0]}>
@@ -92,22 +92,27 @@ function Human({x,z=-.8,guard=false,time}){
  const elbow=[lerp(x+(guard?-.35:.35),guard?1.0:-.74,reach),lerp(-.65,-.50,reach),lerp(z+.05,-1.48,reach)];
  const hand=[lerp(x+(guard?-.65:.66),guard?.43:-.42,reach),lerp(-1.13,guard?.20:-.50,reach),lerp(z+.35,guard?-2.68:-3.04,reach)];
  return <group>
-  <Cy p={[x,-1.22,z]} a={[.32,.33,1.27,12]} color={guard?"#1b2933":"#283339"}/>
+  <Cy p={[x-.19,-1.51,z]} a={[.15,.17,.85,12]} color={guard?"#1b2933":"#283339"}/>
+  <Cy p={[x+.19,-1.51,z]} a={[.15,.17,.85,12]} color={guard?"#1b2933":"#283339"}/>
+  <Box p={[x-.19,-1.94,z+.13]} s={[.37,.12,.62]} color="#171c23"/>
+  <Box p={[x+.19,-1.94,z+.13]} s={[.37,.12,.62]} color="#171c23"/>
   <Cy p={[x,-.42,z]} a={[.43,.34,1.2,16]} color={color}/>
-  <Box p={[x,-.35,z+.36]} s={[.28,.99,.039]} color={guard?"#ad856d":"#bda084"}/>
+  <Box p={[x,-.35,z+.355]} s={[.24,.84,.034]} color={guard?"#b7b3a7":"#bfbbb0"}/>
+  <Box p={[x,-.35,z+.39]} s={[.075,.63,.021]} color={guard?"#8b4557":"#766358"}/>
   <Box p={[x-.23,-.12,z+.32]} s={[.33,.44,.08]} rotation={[0,0,-.33]} color={guard?"#394957":"#53666b"}/>
   <Box p={[x+.23,-.12,z+.32]} s={[.33,.44,.08]} rotation={[0,0,.33]} color={guard?"#394957":"#53666b"}/>
   <Cy p={[x,.24,z]} a={[.14,.13,.2,12]} color={skin}/>
   <group position={[x,.72-ease((time-7.9)/1.1)*.08,z+.05]} rotation={[0,(guard?-.12:.16)*ease((time-9)/.5),0]}>
-   <mesh scale={[.36,.44,.33]}><sphereGeometry args={[1,24,18]}/><meshStandardMaterial color={skin} flatShading roughness={.85}/></mesh>
-   <mesh position={[0,.27,-.05]} scale={[.37,.20,.36]}><sphereGeometry args={[1,16,12]}/><meshStandardMaterial color="#1f252a" roughness={.91}/></mesh>
-   {Array.from({length:5},(_,i)=><mesh key={i} position={[(i-2)*.14,.36,.13]} rotation={[.23,0,(i-2)*.14]} scale={[.14,.22,.13]}><coneGeometry args={[1,1,6]}/><meshStandardMaterial color="#171e25"/></mesh>)}
+   <mesh scale={[.35,.41,.33]}><sphereGeometry args={[1,36,28]}/><meshStandardMaterial color={skin} roughness={.83}/></mesh>
+   {[-.35,.35].map((sx,i)=><mesh key={"ear"+i} position={[sx,-.07,0]} scale={[.07,.115,.065]}><sphereGeometry args={[1,16,12]}/><meshStandardMaterial color={skin} roughness={.83}/></mesh>)} 
+   <mesh position={[0,.27,-.11]} scale={[.36,.17,.35]}><sphereGeometry args={[1,30,20]}/><meshStandardMaterial color="#23242a" roughness={.94}/></mesh>
+   {Array.from({length:8},(_,i)=><mesh key={i} position={[(i-3.5)*.09,.345-.018*Math.abs(i-3.5),.12]} rotation={[.04,0,(i-3.5)*.12]} scale={[.10,.10,.20]}><sphereGeometry args={[1,12,10]}/><meshStandardMaterial color="#1e2028" roughness={.99}/></mesh>)}
    {[-.14,.14].map((v,i)=><group key={i}>
-     <mesh position={[v,.065,.306]} scale={[.061,.036,.017]}><sphereGeometry args={[1,12,8]}/><meshStandardMaterial color="#d7d0b5"/></mesh>
-     <mesh position={[v+.018,.07,.32]} scale={[.028,.027,.016]}><sphereGeometry args={[1,10,8]}/><meshStandardMaterial color="#0b1821"/></mesh>
-     <Box p={[v,.167,.31]} s={[.18,.031,.024]} color="#28212a" rotation={[0,0,guard?.07:-.1]}/>
+     <mesh position={[v,.065,.306]} scale={[.044,.022,.017]}><sphereGeometry args={[1,12,8]}/><meshStandardMaterial color="#d7d0b5"/></mesh>
+     <mesh position={[v+.012,.067,.320]} scale={[.018,.019,.012]}><sphereGeometry args={[1,10,8]}/><meshStandardMaterial color="#0b1821"/></mesh>
+     <Box p={[v,.148,.305]} s={[.145,.022,.024]} color="#28212a" rotation={[0,0,guard?.07:-.1]}/>
    </group>)}
-   <mesh position={[0,-.048,.335]} scale={[.085,.115,.13]}><coneGeometry args={[1,1,5]}/><meshStandardMaterial color={skin}/></mesh>
+   <mesh position={[0,-.065,.333]} scale={[.059,.092,.093]}><sphereGeometry args={[1,16,12]}/><meshStandardMaterial color={skin} roughness={.88}/></mesh>
    <Box p={[0,-.215,.32]} s={[.14,mouth,.02]} color="#492c2b"/>
   </group>
   <Limb a={[x+(guard?-.36:.36),-.26,z]} b={elbow} color={color} r={.145}/>
