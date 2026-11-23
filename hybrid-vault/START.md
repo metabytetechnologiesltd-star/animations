@@ -1,1 +1,1 @@
-Hybrid 3D2D original film build #2 — fixed Reflection easing helper; 21 seconds, 504 frames, four existing ElevenLabs voice clips
+Hybrid 3D2D original film build #3 — postprocessing disabled in CPU renderer, open vault ring, refined figures, original ElevenLabs vocals
