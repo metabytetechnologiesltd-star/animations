@@ -119,7 +119,7 @@ function Human({x,z=-.8,guard=false,time}){
  </group>;
 }
 function Reflection({time}){
- const opacity=e((time-15.55)/1.45)*.75;
+ const opacity=ease((time-15.55)/1.45)*.75;
  if(opacity===0)return null;
  return <group position={[0,.20,-4.48]}>
   <mesh position={[0,.72,.015]} scale={[.38,.42,.07]}><sphereGeometry args={[1,16,12]}/><meshBasicMaterial color="#091b24" transparent opacity={opacity}/></mesh>
