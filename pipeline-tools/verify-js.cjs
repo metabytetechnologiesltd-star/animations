@@ -29,7 +29,7 @@ for(const [pkg,why] of installed){
 const react=JSON.parse(fs.readFileSync("node_modules/react/package.json","utf8")).version;
 const fiber=JSON.parse(fs.readFileSync("node_modules/@react-three/fiber/package.json","utf8")).version;
 if(!react.startsWith("18.")||!fiber.startsWith("8."))throw Error("Original React18/R3F8 stack must remain unchanged");
-const gsap = require("gsap").gsap;
+const gsap = require(path.join(process.cwd(),"node_modules","gsap")).gsap;
 const object={x:0};
 const animation=gsap.timeline({paused:true}).to(object,{x:10,duration:1,ease:"none"});
 animation.seek(.5,false);
